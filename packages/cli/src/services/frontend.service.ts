@@ -315,6 +315,10 @@ export class FrontendService {
 		const isAskAiEnabled = this.license.isAskAiEnabled();
 		const isAiCreditsEnabled = this.license.isAiCreditsEnabled();
 
+		// Check if self-hosted AI is configured
+		const isSelfHostedAiEnabled = this.globalConfig.aiAssistant.selfHostedEnabled && 
+			(this.globalConfig.aiAssistant.openRouterApiKey || this.globalConfig.aiAssistant.openAiApiKey);
+
 		this.settings.license.planName = this.license.getPlanName();
 		this.settings.license.consumerId = this.license.getConsumerId();
 
@@ -375,17 +379,18 @@ export class FrontendService {
 			this.settings.missingPackages = this.communityPackagesService.hasMissingPackages;
 		}
 
-		if (isAiAssistantEnabled) {
-			this.settings.aiAssistant.enabled = isAiAssistantEnabled;
+		// Enable AI assistant if either licensed or self-hosted mode is configured
+		if (isAiAssistantEnabled || isSelfHostedAiEnabled) {
+			this.settings.aiAssistant.enabled = true;
 		}
 
-		if (isAskAiEnabled) {
-			this.settings.askAi.enabled = isAskAiEnabled;
+		if (isAskAiEnabled || isSelfHostedAiEnabled) {
+			this.settings.askAi.enabled = true;
 		}
 
-		if (isAiCreditsEnabled) {
-			this.settings.aiCredits.enabled = isAiCreditsEnabled;
-			this.settings.aiCredits.credits = this.license.getAiCredits();
+		if (isAiCreditsEnabled || isSelfHostedAiEnabled) {
+			this.settings.aiCredits.enabled = true;
+			this.settings.aiCredits.credits = isAiCreditsEnabled ? this.license.getAiCredits() : 0;
 		}
 
 		this.settings.mfa.enabled = this.globalConfig.mfa.enabled;
